@@ -78,6 +78,12 @@
             <artifactId>xmlsec</artifactId>
             <version>2.2.0</version>
         </dependency>
+        <!-- CLI and args parsing -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.5.2</version>
+        </dependency>
 
         <!-- Logging -->
         <dependency>
