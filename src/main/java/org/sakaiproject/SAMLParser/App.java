@@ -25,6 +25,8 @@ import org.opensaml.xml.util.XMLHelper;
  */
 public class App
 {
+    public static final String NO_SIGNATURE = "no-signature";
+
     /**
      * This application takes an input XML string, parses it and decrypts all the embeded EncryptedAssertions 
      * @param args
@@ -50,11 +52,15 @@ public class App
                     " * outputEncoding\n" +
                     "    The encoding format that the decrypted data should be outputted in.\n" + 
                     "    Currently only supports 'base64' or 'plain', defaults to 'plain'.\n\n" +
-                    
+                    " * allowMissingSignature\n" +
+                    "    Do not fail if the Signature is missing or null.\n" +
+                    "    Currently only supports 'no-signature' or 'require-signature', defaults to 'require-signature'.\n\n" +
+
                     "Examples:\n" +
                     "    java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar <idpPublicKey> <spPublicKey> <spPrivateKey> '<XML data>'\n" +
                     "    java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar <idpPublicKey> <spPublicKey> <spPrivateKey> '<base64-encoded XML data>' 'base64'\n" +
-                    "    java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar <idpPublicKey> <spPublicKey> <spPrivateKey> '<base64-encoded XML data>' 'base64' 'base64'"
+                    "    java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar <idpPublicKey> <spPublicKey> <spPrivateKey> '<base64-encoded XML data>' 'base64' 'base64'\n" +
+                    "    java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar <idpPublicKey> <spPublicKey> <spPrivateKey> '<base64-encoded XML data>' 'base64' 'base64', 'no-signature'"
             );
             return;
         }
@@ -65,6 +71,7 @@ public class App
         String samlResponse = args[3];
         String inputEncoding = (args.length > 4) ? args[4] : "";
         String outputEncoding = (args.length > 5) ? args[5] : "";
+        String allowMissingSignature = (args.length > 6) ? args[6] : "";
 
         // Bootstrap OpenSAML.
         // This will (for instance) get all the unmarshallers registered.
@@ -78,6 +85,8 @@ public class App
 
         // Parse/decrypt the saml response.
         SAMLParser parser = new SAMLParser(idpPublicKey, spPublicKey, spPrivateKey);
+        parser.setAllowMissingSignature(NO_SIGNATURE.equals(allowMissingSignature));
+
         XMLObject xmlObj = parser.parse(samlResponse);
 
         // Print the parsed response back out to stdout.

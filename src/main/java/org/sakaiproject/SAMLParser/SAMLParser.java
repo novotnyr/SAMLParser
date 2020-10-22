@@ -40,13 +40,18 @@ import org.opensaml.xml.security.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xml.security.keyinfo.StaticKeyInfoCredentialResolver;
 import org.opensaml.xml.signature.Signature;
 import org.opensaml.xml.validation.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SAMLParser {
+    public final Logger logger = LoggerFactory.getLogger(getClass());
 
     private StaticKeyInfoCredentialResolver skicr;
     private String idpPublicKey;
+
+    private boolean allowMissingSignature = true;
 
     public SAMLParser(String idpPublicKey, String spPublicKey, String spPrivateKey) throws CertificateException, KeyException {
         this.idpPublicKey = idpPublicKey;
@@ -57,7 +62,7 @@ public class SAMLParser {
         // Setup the Credential resolvers
         skicr = new StaticKeyInfoCredentialResolver(credentials);
     }
-    
+
     public XMLObject parse(String SAMLResponse) throws Exception {
         // Unmarshall the SAML Response into Java SAML Objects.
         Response response = (Response) unmarshall(SAMLResponse);
@@ -92,7 +97,15 @@ public class SAMLParser {
 
     private void validateAssertion(Assertion assertion) throws ValidationException {
         Signature signature = assertion.getSignature();
-        
+        if (signature == null) {
+            String message = "No signature has been found in the assertion (null)";
+            if (!this.allowMissingSignature) {
+                throw new ValidationException(message);
+            }
+            logger.error(message);
+            return;
+        }
+
         // First check if the keys match.
         // Anybody can sign a message..
         String xmlKey = signature.getKeyInfo().getX509Datas().get(0).getX509Certificates().get(0).getValue();
@@ -114,7 +127,7 @@ public class SAMLParser {
 
     /**
      * Unmarshall XML to POJOs (These POJOs will be OpenSAML objects.)
-     * 
+     *
      * @param samlResponse
      * @return The root OpenSAML object.
      * @throws Exception
@@ -135,5 +148,9 @@ public class SAMLParser {
         }
 
         return unmarshaller.unmarshall(samlElement);
+    }
+
+    public void setAllowMissingSignature(boolean allowMissingSignature) {
+        this.allowMissingSignature = allowMissingSignature;
     }
 }
