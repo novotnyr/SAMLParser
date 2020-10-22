@@ -44,6 +44,29 @@ Examples:
     java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar <idpPublicKey> <spPublicKey> <spPrivateKey> '<base64-encoded XML data>' 'base64' 'base64'
 ```
 
+## Alternative usage
+
+The `FileBasedApp` class is used to launch the tool with parameters that read corresponding keys and data from files.
+
+Please use `-cp` instead of `-jar` and use an explicit class name as an entrypoint.
+
+```
+$ java -cp target/org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar org.sakaiproject.SAMLParser.FileBasedApp
+Usage:
+java -jar org.sakaiproject.Hilary.SAMLParser-1.0-SNAPSHOT-jar-with-dependencies.jar -i idpPublicKey -p spPublicKey -k spPrivateKey -I inputEncoding -O outputEncoding [-n] <XML data file>
+```
+
+Options:
+
+ * `-i`: a path to a file with a Identity Provider's public key that can be used to verify signatures in SAML data.
+ * `-p`: a path to a file with Service Provider's public key that the IdP uses to encrypt SAML data.
+ * `-k`: a path to a file with a Service Provider's public key that can be used to decrypt SAML data.
+ * `-I`: encoding format that the inputData is passed in. Currently only supports 'base64' or 'plain', defaults to 'plain'.
+ * `-O`:  encoding format that the decrypted data should be outputted in. Currently only supports 'base64' or 'plain', defaults to 'plain'.
+ * `-n`: whether to ignore SAML assertions without signatures
+ * `XML data`: a path to the file with SAML data that needs decrypting (if any.)
+
+
 ## License
 
 ```
