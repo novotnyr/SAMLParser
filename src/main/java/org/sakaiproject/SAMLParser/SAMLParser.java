@@ -29,8 +29,11 @@ import org.opensaml.saml2.core.Response;
 import org.opensaml.saml2.encryption.Decrypter;
 import org.opensaml.security.SAMLSignatureProfileValidator;
 import org.opensaml.xml.XMLObject;
+import org.opensaml.xml.encryption.ChainingEncryptedKeyResolver;
 import org.opensaml.xml.encryption.DecryptionException;
+import org.opensaml.xml.encryption.EncryptedKeyResolver;
 import org.opensaml.xml.encryption.InlineEncryptedKeyResolver;
+import org.opensaml.xml.encryption.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.opensaml.xml.io.Unmarshaller;
 import org.opensaml.xml.io.UnmarshallerFactory;
 import org.opensaml.xml.parse.BasicParserPool;
@@ -121,7 +124,13 @@ public class SAMLParser {
 
     private Assertion decryptAssertion(KeyInfoCredentialResolver skicr, EncryptedAssertion assertion)
             throws DecryptionException {
-        Decrypter decrypter = new Decrypter(null, skicr, new InlineEncryptedKeyResolver());
+
+        ChainingEncryptedKeyResolver chainingEncryptedKeyResolver = new ChainingEncryptedKeyResolver();
+        List<EncryptedKeyResolver> resolverChain = chainingEncryptedKeyResolver.getResolverChain();
+        resolverChain.add(new InlineEncryptedKeyResolver());
+        resolverChain.add(new SimpleRetrievalMethodEncryptedKeyResolver());
+
+        Decrypter decrypter = new Decrypter(null, skicr, chainingEncryptedKeyResolver);
         return decrypter.decrypt(assertion);
     }
 
